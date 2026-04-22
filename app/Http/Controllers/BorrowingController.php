@@ -6,8 +6,10 @@ use App\Models\Borrowing;
 use App\Models\Category;
 use App\Models\Item;
 use Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BorrowingController extends Controller
 {
@@ -65,7 +67,7 @@ class BorrowingController extends Controller
         $items = $query->orderBy('available_quantity', 'desc')->paginate(6);
         $borrowings = Borrowing::with(['item', 'item.category', 'borrower', 'approver'])->filteringByRole()->get();
 
-        return inertia('modules/borrowings/create/page', [
+        return Inertia::render('modules/borrowings/create/page', [
             'items' => $items,
             'categories' => $categories,
             'borrowings' => $borrowings,
@@ -222,5 +224,58 @@ class BorrowingController extends Controller
         }
 
         return back();
+    }
+
+    public function report(Request $request)
+    {
+        $query = Borrowing::with(['item', 'item.category', 'borrower', 'approver', 'uploader'])
+            ->filteringByRole()
+            ->latest();
+
+        if ($request->has(['start_date', 'end_date'])) {
+            $query = $query->when($request->start_date, function ($q) use ($request) {
+                $q->where('borrow_date', '>=', $request->start_date);
+            })
+                ->when($request->end_date, function ($q) use ($request) {
+                    $q->where('borrow_date', '<=', $request->end_date);
+                });
+        }
+
+        if ($request->status && $request->status !== 'all') {
+            $query = $query->where('status', $request->status);
+        }
+
+        $borrowings = $query->paginate(10);
+        return Inertia::render('modules/borrowings/report/page', [
+            'borrowings' => $borrowings,
+            'user' => Auth::user()
+        ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = Borrowing::with(['item', 'item.category', 'borrower', 'approver', 'uploader'])
+            ->filteringByRole()
+            ->latest();
+
+        if ($request->has(['start_date', 'end_date'])) {
+            $query = $query->when($request->start_date, function ($q) use ($request) {
+                $q->where('borrow_date', '>=', $request->start_date);
+            })
+                ->when($request->end_date, function ($q) use ($request) {
+                    $q->where('borrow_date', '<=', $request->end_date);
+                });
+        }
+
+        if ($request->status && $request->status !== 'all') {
+            $query = $query->where('status', $request->status);
+        }
+
+        $pdf = Pdf::loadView('exports.borrowings_report', [
+            'borrowings' => $query->get()
+        ]);
+
+        $pdf->setPaper('A4');
+        return $pdf->download();
     }
 }

@@ -34,6 +34,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [BorrowingController::class, 'index']);
         Route::post('/', [BorrowingController::class, 'store']);
         Route::get('/create', [BorrowingController::class, 'create']);
+        Route::get('/report', [BorrowingController::class, 'report']);
+        Route::get('/report/export', [BorrowingController::class, 'exportPdf']);
         Route::patch('/{id}', [BorrowingController::class, 'update']);
         Route::post('/{id}/update-status', [BorrowingController::class, 'updateStatus']);
     });

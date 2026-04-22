@@ -104,6 +104,7 @@ export default function ReturnItemsReportPage({ return_items, user }: { return_i
                         withAll={true}
                     />
                 </div>
+
                 <DataTable return_items={return_items.data} userRole={user.role} />
                 {return_items.last_page > 1 && (
                     <PaginationComponent currentPage={return_items.current_page} lastPage={return_items.last_page} onPageChange={handlePageChange} />

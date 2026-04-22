@@ -6,6 +6,7 @@ use App\Models\Borrowing;
 use App\Models\Item;
 use App\Models\ReturnItem;
 use Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -15,7 +16,7 @@ class ReturnItemController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = Borrowing::with(['approver', 'borrower', 'item.category', 'returnItem'])
             ->where(function ($q) {
@@ -30,11 +31,11 @@ class ReturnItemController extends Controller
             ->filteringByRole()
             ->latest();
 
-        if (request()->has('search') && request()->search) {
-            $query = $query->whereHas('item', function ($q) {
-                $q->where('name', 'like', '%' . request()->search . '%')
-                    ->orWhere('code', 'like', '%' . request()->search . '%')
-                    ->orWhere('description', 'like', '%' . request()->search . '%');
+        if ($request->search && $request->search) {
+            $query = $query->whereHas('item', function ($q) use($request) {
+                $q->where('name', 'like', "%$request->search%")
+                    ->orWhere('code', 'like', "%$request->search%")
+                    ->orWhere('description', 'like', "%$request->search%");
             });
         }
 
@@ -204,9 +205,9 @@ class ReturnItemController extends Controller
     {
         $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.item.category', 'borrowing.borrower', 'received'])
             ->filteringByRole()
-            ->latest();
+            ->paginate(10);
 
-        if ($request->has('condition') && $request->condition !== 'all') {
+        if ($request->condition && $request->condition !== 'all') {
             $query = $query->where('condition', $request->condition);
         }
 
@@ -219,9 +220,34 @@ class ReturnItemController extends Controller
             });
         }
 
-        return inertia('modules/return-items/report/page', [
+        return Inertia::render('modules/return-items/report/page', [
             'return_items' => $query,
             'user' => Auth::user()
         ]);
+    }
+
+    public function exportPdf(Request $request) {
+        $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.item.category', 'borrowing.borrower', 'received']);
+
+        if ($request->has(['start_date', 'end_date'])) {
+            $query = $query->when($request->start_date, function ($q) use ($request) {
+                $q->where('return_date', '>=', $request->start_date);
+            })
+                ->when($request->end_date, function ($q) use ($request) {
+                    $q->where('return_date', '<=', $request->end_date);
+                });
+        }
+
+        if ($request->condition && $request->condition !== 'all') {
+            $query = $query->where('condition', $request->condition);
+        }
+
+        $pdf = Pdf::loadView('exports.return_items_report', [
+            'return_items' => $query->get()
+        ]);
+
+        $pdf->setPaper('A4');
+        return $pdf->download();
+
     }
 }
