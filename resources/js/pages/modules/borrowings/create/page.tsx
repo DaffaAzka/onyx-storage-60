@@ -13,16 +13,16 @@ export default function CreatePage({ items, categories }: { items: PaginatedData
 
     function handleSearchByCategories(e: string) {
         setCategoryId(e);
-        router.get('/borrowing/create', { category_id: e, search: search }, { preserveState: true, preserveScroll: true });
+        router.get('/borrowings/create', { category_id: e, search: search }, { preserveState: true, preserveScroll: true });
     }
 
     function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
         setSearch(e.target.value);
-        router.get('/borrowing/create', { search: e.target.value, category_id: categoryId }, { preserveState: true, preserveScroll: true });
+        router.get('/borrowings/create', { search: e.target.value, category_id: categoryId }, { preserveState: true, preserveScroll: true });
     }
 
     function handlePageChange(page: number) {
-        router.get('/borrowing/create', { page, category_id: categoryId, search: search }, { preserveState: true, preserveScroll: true });
+        router.get('/borrowings/create', { page, category_id: categoryId, search: search }, { preserveState: true, preserveScroll: true });
     }
 
     return (

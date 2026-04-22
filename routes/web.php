@@ -30,6 +30,11 @@ Route::group(['middleware' => ['auth']], function() {
     Route::get('/logout', [AuthController::class, 'logout']);
     Route::patch('/my-profile', [AuthController::class, 'update']);
 
+    Route::prefix('/borrowings')->group(function () {
+        Route::get('/', [BorrowingController::class, 'index']);
+        Route::get('/create', [BorrowingController::class, 'create']);
+    });;
+
     Route::group(['middleware' => ['role:admin']], function () {
 
         Route::get('/categories', [CategoryController::class, 'index']);

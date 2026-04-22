@@ -18,11 +18,11 @@ class UserController extends Controller
         $query = User::whereNot('id', Auth::id());
 
         if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%')->orWhere('email', 'like', '%' . $request->search . '%')->orWhere('phone_number', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', "%$request->search%")->orWhere('email', 'like', "%$request->search%")->orWhere('phone_number', 'like', "%$request->search%");
         }
 
         if ($request->role && $request->role !== "all") {
-            $query->where('role',  $request->role);
+            $query->where('role', $request->role);
         }
 
         $users = $query->paginate(10);
@@ -89,16 +89,24 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email,' . $id,
-            'role' => 'required|string',
-            'phone_number' => 'nullable|string',
+            'password' => 'nullable|string|min:8',
+            'retry_password' => 'nullable|string|same:password',
+            'role' => 'required|in:admin,officer,user',
+            'phone_number' => 'nullable|string|unique:users,phone_number,' . $id,
         ]);
 
-        User::findOrFail($id)->update([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'phone_number' => $request->phone_number ?? '',
-        ]);
+            'phone_number' => $request->phone_number,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        User::findOrFail($id)->update($data);
 
         return back();
     }
@@ -108,7 +116,13 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        User::findOrFail($id)->delete();
-        return back();
+        $user = User::with('borrowings')->findOrFail($id);
+
+        if ($user->borrowings()->whereIn('status', ['borrowed', 'pending', 'approved'])->exists()) {
+            return back()->withErrors(['message' => 'Cannot delete user because they still have active borrowing transactions.']);
+        } else {
+            $user->delete();
+            return back();
+        }
     }
 }
