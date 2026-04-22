@@ -191,7 +191,7 @@ export default function ActionModal({
                     formData.append('image_path', imageFile);
                 }
 
-                router.patch(`/items/${item.id}`, formData, {
+                router.post(`/items/${item.id}`, formData, {
                     preserveState: true,
                     preserveScroll: true,
                     only: ['items'],
