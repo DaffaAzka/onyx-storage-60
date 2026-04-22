@@ -30,7 +30,7 @@ class Item extends Model
     }
 
     function user() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     function category()
