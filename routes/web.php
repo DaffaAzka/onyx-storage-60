@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ReturnItemController;
 use App\Http\Controllers\UserController;
+use App\Models\ActivityLog;
 use App\Models\Borrowing;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -67,6 +68,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/users', [UserController::class, 'store']);
         Route::patch('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+        Route::get('activity-logs', [ActivityLogController::class, 'index']);
 
     });
 

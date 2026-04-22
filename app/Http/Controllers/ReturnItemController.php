@@ -204,8 +204,7 @@ class ReturnItemController extends Controller
     public function report(Request $request)
     {
         $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.item.category', 'borrowing.borrower', 'received'])
-            ->filteringByRole()
-            ->paginate(10);
+            ->filteringByRole();
 
         if ($request->condition && $request->condition !== 'all') {
             $query = $query->where('condition', $request->condition);
@@ -220,8 +219,10 @@ class ReturnItemController extends Controller
             });
         }
 
+        $return_items =  $query->paginate(10);
+
         return Inertia::render('modules/return-items/report/page', [
-            'return_items' => $query,
+            'return_items' => $return_items,
             'user' => Auth::user()
         ]);
     }
