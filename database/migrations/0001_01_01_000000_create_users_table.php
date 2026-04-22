@@ -18,7 +18,7 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->enum('role', ['user', 'admin', 'officer'])->default('user');
             $table->boolean('is_active')->default(true);
-            $table->string('phone number')->nullable();
+            $table->string('phone_number')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
