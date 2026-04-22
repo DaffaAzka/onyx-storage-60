@@ -90,10 +90,15 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8',
-            'retry_password' => 'nullable|string|same:password',
             'role' => 'required|in:admin,officer,user',
             'phone_number' => 'nullable|string|unique:users,phone_number,' . $id,
         ]);
+
+        if($request->password) {
+            $request->validate([
+                'retry_password' => 'required|string|same:password',
+            ]);
+        }
 
         $data = [
             'name' => $request->name,

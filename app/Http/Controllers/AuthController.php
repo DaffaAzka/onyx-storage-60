@@ -176,8 +176,13 @@ class AuthController extends Controller
             'email' => 'required|string|email|unique:users,email,' . $id,
             'phone_number' => 'nullable|string|unique:users,phone_number,' . $id,
             'password' => 'nullable|string|min:8',
-            'retry_password' => 'nullable|string|same:password',
         ]);
+
+        if ($request->password) {
+            $request->validate([
+                'retry_password' => 'required|string|same:password',
+            ]);
+        }
 
         $data = [
             'name' => $request->name,
