@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { printUserNameSoftDelete } from '@/lib/component-helpers';
 import { Actions, Category } from '@/lib/types';
 import { HistoryIcon, MoreHorizontalIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -59,7 +60,14 @@ export default function DataTable({ categories }: { categories: Category[] }) {
                                             <div className="w-20 truncate lg:w-fit">{category.description}</div>
                                         </TableCell>
                                         <TableCell>{category.items?.length}</TableCell>
-                                        <TableCell className="hidden lg:table-cell">{category.user?.name ?? 'N/A'}</TableCell>
+                                        <TableCell className="hidden lg:table-cell">
+                                            {category.user?.name
+                                                ? printUserNameSoftDelete({
+                                                      className: '',
+                                                      user: category.user,
+                                                  })
+                                                : 'N/A'}
+                                        </TableCell>
                                         <TableCell className="flex flex-row justify-end gap-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
