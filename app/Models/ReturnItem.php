@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ReturnItem extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'borrowing_id',
         'received_by',
@@ -27,8 +30,9 @@ class ReturnItem extends Model
     {
         if ($this->attributes['image_path']) {
             return '/storage/' . $this->attributes['image_path'];
+        } else {
+            return '/storage/not_found.jpg';
         }
-        return null;
     }
 
     function scopeFilteringByRole(Builder $query)

@@ -221,7 +221,7 @@ export default function ActionModal({
                             <div className="space-y-3">
                                 <h3 className="text-sm font-semibold text-gray-900">Return Details</h3>
                                 <div className="space-y-3 rounded-lg bg-gray-50 p-4">
-                                    {values.returnItem?.image_url && (
+                                    {values.returnItem?.image_path && (
                                         <div className="overflow-hidden rounded-md bg-white">
                                             <img src={values.returnItem?.image_url ?? ''} alt="Item Preview" className="h-40 w-full object-contain" />
                                         </div>
@@ -348,7 +348,7 @@ export default function ActionModal({
                             <form onSubmit={handleSubmit} className="space-y-3">
                                 <h3 className="text-sm font-semibold text-gray-900">Return Details</h3>
 
-                                {values.returnItem?.image_url && (
+                                {values.returnItem?.image_path && (
                                     <div className="overflow-hidden rounded-md bg-white">
                                         <img src={values.returnItem?.image_url ?? ''} alt="Item Preview" className="h-40 w-full object-contain" />
                                     </div>

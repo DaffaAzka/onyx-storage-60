@@ -256,7 +256,7 @@ export default function ActionModal({
                                 <h3 className="text-sm font-semibold text-gray-900">Borrowing Details</h3>
 
                                 <div className="space-y-3 rounded-lg bg-gray-50 p-4">
-                                    {borrowing.image_url && (
+                                    {borrowing.image_path && (
                                         <div className="overflow-hidden rounded-md bg-white">
                                             <img src={borrowing?.image_url ?? ''} alt="Borrowing Preview" className="h-40 w-full object-contain" />
                                         </div>

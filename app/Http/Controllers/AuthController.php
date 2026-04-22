@@ -174,14 +174,22 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users,email,' . $id,
-            'phone_number' => 'nullable|string|min:8'
+            'phone_number' => 'nullable|string|unique:users,phone_number,' . $id,
+            'password' => 'nullable|string|min:8',
+            'retry_password' => 'nullable|string|same:password',
         ]);
 
-        User::findOrFail($id)->update([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'phone_number' => ($request->phone_number) ? $request->phone_number : '',
-        ]);
+            'phone_number' => $request->phone_number,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        User::findOrFail($id)->update($data);
 
         return back();
     }

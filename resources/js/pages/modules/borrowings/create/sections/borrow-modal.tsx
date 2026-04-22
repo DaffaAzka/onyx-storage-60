@@ -49,6 +49,13 @@ export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isO
                 onFinish: () => setLoading(false),
                 onSuccess: () => {
                     onClose();
+                    setValues({
+                        item_id: 0,
+                        borrow_date: '',
+                        planned_return_date: '',
+                        quantity: 1,
+                        notes: '',
+                    });
                     toast.success('Item borrowed successfully');
                 },
             },

@@ -32,8 +32,9 @@ class Borrowing extends Model
     {
         if ($this->attributes['image_path']) {
             return '/storage/' . $this->attributes['image_path'];
+        } else {
+            return '/storage/not_found.jpg';
         }
-        return null;
     }
 
     function scopeFilteringByRole(Builder $query)
@@ -47,8 +48,9 @@ class Borrowing extends Model
         return $query;
     }
 
-    function item() {
-        return $this->belongsTo(Item::class);
+    function item()
+    {
+        return $this->belongsTo(Item::class)->withTrashed();
     }
 
     function borrower()
@@ -66,7 +68,8 @@ class Borrowing extends Model
         return $this->belongsTo(User::class, 'upload_by')->withTrashed();
     }
 
-    function return_item() {
-        return $this->hasOne(ReturnItem::class);
+    function returnItem()
+    {
+        return $this->hasOne(ReturnItem::class)->withTrashed();
     }
 }

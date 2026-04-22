@@ -29,6 +29,7 @@ return new class extends Migration {
             $table->foreignId('borrowing_id')->nullable()->constrained('borrowings')->nullOnDelete();
             $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

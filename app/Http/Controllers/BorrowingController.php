@@ -1,0 +1,226 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Borrowing;
+use App\Models\Category;
+use App\Models\Item;
+use Auth;
+use DB;
+use Illuminate\Http\Request;
+
+class BorrowingController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $query = Borrowing::with(['item', 'item.category', 'borrower', 'approver', 'uploader'])
+            ->filteringByRole()
+            ->latest();
+
+        if ($request->has('status') && $request->status !== 'all') {
+            $query = $query->where('status', $request->status);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%$search%")
+                    ->orWhereHas('item', function ($q) use ($search) {
+                        $q->where('name', 'like', "%$search%")
+                            ->orWhere('code', 'like', "%$search%");
+                    });
+            });
+        }
+
+        $borrowings = $query->paginate(10);
+        $user = auth()->user();
+
+        return inertia('modules/borrowings/page', [
+            'borrowings' => $borrowings,
+            'user' => $user
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request)
+    {
+        $categories = Category::all();
+        $query = Item::with(['category', 'user']);
+
+        if ($request->has('search') && $request->search) {
+            $query = $query->where('name', 'like', "%$request->search%")
+                ->orWhere('code', 'like', "%$request->search%")
+                ->orWhere('description', 'like', "%$request->search%");
+        }
+
+        if ($request->has('category_id') && $request->category_id && $request->category_id != 'all') {
+            $query = $query->where('category_id', $request->category_id);
+        }
+
+        $items = $query->orderBy('available_quantity', 'desc')->paginate(6);
+        $borrowings = Borrowing::with(['item', 'item.category', 'borrower', 'approver'])->filteringByRole()->get();
+
+        return inertia('modules/borrowings/create/page', [
+            'items' => $items,
+            'categories' => $categories,
+            'borrowings' => $borrowings,
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'required|integer|min:1',
+            'planned_return_date' => 'required|date|after:today',
+            'notes' => 'nullable|string',
+            'borrow_date' => 'required|date',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $code = 'BR-' . $request->item_id . '-' . random_int(1000, 9999);
+
+            Borrowing::create([
+                'borrower_id' => auth()->id(),
+                'item_id' => $request->item_id,
+                'quantity' => $request->quantity,
+                'borrow_date' => $request->borrow_date,
+                'planned_return_date' => $request->planned_return_date,
+                'notes' => $request->notes,
+                'code' => $code,
+            ]);
+
+            Item::findOrFail($request->item_id)->decrement('available_quantity', $request->quantity);
+        });
+
+        return back();
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $borrowing = Borrowing::with('item')->findOrFail($id);
+
+        $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'required|integer|min:1',
+            'planned_return_date' => 'required|date|after:today',
+            'notes' => 'nullable|string',
+            'borrow_date' => 'required|date',
+        ]);
+
+        if ($borrowing->status === 'rejected') {
+            if ($borrowing->item->available_quantity < $borrowing->quantity) {
+                return back()->withErrors(['status' => 'Not enough available quantity to approve this borrowing.']);
+            } else {
+                DB::transaction(function () use ($borrowing, $request, $id) {
+                    $borrowing->item()->update([
+                        'available_quantity' => $borrowing->item->available_quantity - $borrowing->quantity
+                    ]);
+                    Borrowing::findOrFail($id)->update([
+                        'item_id' => $request->item_id,
+                        'quantity' => $request->quantity,
+                        'borrow_date' => $request->borrow_date,
+                        'planned_return_date' => $request->planned_return_date,
+                        'notes' => $request->notes,
+                        'status' => 'pending'
+                    ]);
+                });
+            }
+        } else {
+            Borrowing::findOrFail($id)->update([
+                'item_id' => $request->item_id,
+                'quantity' => $request->quantity,
+                'borrow_date' => $request->borrow_date,
+                'planned_return_date' => $request->planned_return_date,
+                'notes' => $request->notes,
+            ]);
+        }
+
+        return back();
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
+    public function syncLate()
+    {
+        $lateBorrowings = Borrowing::where('status', 'borrowed')
+            ->where('planned_return_date', '<', now())
+            ->get();
+
+        foreach ($lateBorrowings as $borrowing) {
+            $borrowing->update(['status' => 'late']);
+        }
+
+        return back();
+    }
+
+    public function updateStatus(string $id, Request $request)
+    {
+        $borrowing = Borrowing::with('item')->findOrFail($id);
+
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected,borrowed,returned,late',
+            'rejection_reason' => 'nullable|required_if:status,rejected|string',
+            'image_path' => 'nullable|required_if:status,borrowed|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($request->hasFile('image_path')) {
+            $file = $request->file('image_path');
+            $path = $file->store('borrowings', 'public');
+            $image_path = $path;
+            $request['upload_by'] = Auth::id();
+            $request['upload_at'] = now();
+        }
+
+        $borrowing->update([
+            'status' => $request['status'],
+            'rejection_reason' => $request['rejection_reason'] ?? null,
+            'image_path' => $image_path ?? null,
+            'approved_by' => $request['status'] === 'approved' ? auth()->id() : $borrowing->approved_by,
+            'approved_at' => now(),
+            'upload_by' => $request->upload_by ?? null,
+            'upload_at' => $request->upload_at ?? null,
+        ]);
+
+        if ($request['status'] === 'rejected') {
+            $borrowing->item()->update([
+                'available_quantity' => $borrowing->item->available_quantity + $borrowing->quantity
+            ]);
+        }
+
+        return back();
+    }
+}

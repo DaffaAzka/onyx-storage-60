@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Item;
 use Auth;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Throwable;
 
 class ItemController extends Controller
 {
@@ -21,7 +23,7 @@ class ItemController extends Controller
         $query = Item::with(['category', 'user']);
 
         if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%')->orWhere('description', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', "%$request->search%")->orWhere('description', 'like', "%$request->search%");
         }
 
         if ($request->category_id) {
@@ -123,7 +125,10 @@ class ItemController extends Controller
             $file = $request->file('image_path');
             $path = $file->store('items', 'public');
             $data['path'] = $path;
-            $this->removeImg($item->image_path);
+
+            if ($item->image_path) {
+                $this->removeImg($item->image_path);
+            }
         } else {
             $data['path'] = $item->image_path;
         }
@@ -146,11 +151,16 @@ class ItemController extends Controller
     public function destroy(string $id)
     {
         $item = Item::findOrFail($id);
-        $this->removeImg($item->image_path);
+
+        if ($item->image_path) {
+            $this->removeImg($item->image_path);
+        }
+
         $item->delete();
     }
 
-    public function removeImg(string $path) {
+    public function removeImg(string $path)
+    {
         $c = Item::where('image_path', $path)->count();
         if ($c == 1) {
             Storage::disk('public')->delete($path);

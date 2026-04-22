@@ -176,6 +176,7 @@ export default function ReturnedModal({
                         },
                         onError: (e) => {
                             setErrors(e);
+                            console.log(e);
                             toast.error('Error to approve return item');
                         },
                     },

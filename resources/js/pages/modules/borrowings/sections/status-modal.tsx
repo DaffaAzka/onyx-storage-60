@@ -94,7 +94,7 @@ export default function StatusModal({
         e.preventDefault();
         setLoading(true);
 
-        router.patch(
+        router.post(
             `/borrowings/${value.borrowing_id}/update-status`,
             {
                 status: value.status_to.toString(),

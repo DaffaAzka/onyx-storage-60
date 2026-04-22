@@ -260,7 +260,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <DropdownMenuItem
+                                                                    {/* <DropdownMenuItem
                                                                         onClick={() => {
                                                                             setActionModal({
                                                                                 borrowing: borrowing,
@@ -270,7 +270,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                                                         }}
                                                                     >
                                                                         {borrowing.status !== 'rejected' ? 'Update' : 'Resubmit'}
-                                                                    </DropdownMenuItem>
+                                                                    </DropdownMenuItem> */}
                                                                     <DropdownMenuItem
                                                                         onClick={() => {
                                                                             setActionModal({

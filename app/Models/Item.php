@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
     //
+    use SoftDeletes;
+
     protected $fillable = [
         'category_id',
         'user_id',
@@ -25,11 +28,13 @@ class Item extends Model
     {
         if ($this->attributes['image_path']) {
             return '/storage/' . $this->attributes['image_path'];
+        } else {
+            return '/storage/not_found.jpg';
         }
-        return null;
     }
 
-    function user() {
+    function user()
+    {
         return $this->belongsTo(User::class)->withTrashed();
     }
 
