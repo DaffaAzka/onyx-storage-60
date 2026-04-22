@@ -81,6 +81,7 @@ export type Borrowing = {
     status: BorrowingStatus;
     notes: string | null;
     approved_by: number | null;
+    upload_by: number | null;
     approved_at: string | null;
     upload_at: string | null;
     rejection_reason: string | null;
@@ -102,6 +103,7 @@ export type ReturnItem = {
     return_date: string | null;
     verified_at: string | null;
     condition: ItemStatuses;
+    upload_by: number | null;
     fine_amount: number | null;
     fine_paid: boolean;
     notes: string | null;

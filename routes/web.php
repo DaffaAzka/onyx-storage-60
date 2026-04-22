@@ -10,3 +10,9 @@ use App\Http\Controllers\UserController;
 use App\Models\Borrowing;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+Route::group(['middleware' => ['guest']], function () {
+    Route::get('/', function () {
+        return Inertia::render('welcome');
+    })->name('home');
+});
