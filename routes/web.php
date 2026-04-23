@@ -31,6 +31,30 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/logout', [AuthController::class, 'logout']);
     Route::patch('/my-profile', [AuthController::class, 'update']);
 
+    // Route::group(['middleware' => ['role:user,officer']], function () {
+    //     Route::prefix('/borrowings')->group(function () {
+    //         Route::get('/', [BorrowingController::class, 'index']);
+    //         Route::post('/', [BorrowingController::class, 'store']);
+    //         Route::get('/create', [BorrowingController::class, 'create']);
+    //         Route::get('/report', [BorrowingController::class, 'report']);
+    //         Route::get('/report/export', [BorrowingController::class, 'exportPdf']);
+    //         Route::patch('/{id}', [BorrowingController::class, 'update']);
+    //         Route::delete('/{id}', [BorrowingController::class, 'destroy']);
+    //         Route::post('/{id}/update-status', [BorrowingController::class, 'updateStatus']);
+    //     });
+
+    //     Route::prefix('/return-items')->group(function () {
+    //         Route::get('/', [ReturnItemController::class, 'index'])->name('return-items');
+    //         Route::get('/list', [ReturnItemController::class, 'show'])->name('return-items.list');
+    //         Route::get('/report', [ReturnItemController::class, 'report'])->name('return-items.report');
+    //         Route::get('/report/export', [ReturnItemController::class, 'exportPdf'])->name('return-items.report/export');
+    //         Route::post('', [ReturnItemController::class, 'store'])->name('return-items.store');
+    //         Route::post('/{id}/verify', [ReturnItemController::class, 'verify'])->name('return-items.verify');
+    //         Route::patch('/{id}', [ReturnItemController::class, 'update'])->name('return-items.update');
+
+    //     });
+    // });
+
     Route::prefix('/borrowings')->group(function () {
         Route::get('/', [BorrowingController::class, 'index']);
         Route::post('/', [BorrowingController::class, 'store']);

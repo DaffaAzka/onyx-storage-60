@@ -34,12 +34,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 icon: ClipboardList,
                 isActive: true,
                 isShow: true,
+                // isShow: authorizations(auth.role, ['officer', 'user']),
                 items: [
                     {
                         title: 'Create Borrowing',
                         url: '/borrowings/create',
                         isActive: true,
-                        isShow: true,
+                        isShow: authorizations(auth.role, ['user']),
                     },
                     {
                         title: 'Manage Borrowings',
@@ -62,6 +63,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 icon: RefreshCw,
                 isActive: true,
                 isShow: true,
+                // isShow: authorizations(auth.role, ['officer', 'user']),
                 items: [
                     {
                         title: 'Manage Returns',

@@ -70,7 +70,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
     }
 
     function isStatusDisabled(currentStatus: string): boolean {
-        const isAdminOrOfficer = authorizations(userRole, ['admin', 'officer']);
+        const isAdminOrOfficer = authorizations(userRole, ['officer']);
 
         if (!isAdminOrOfficer && currentStatus == 'approved') {
             return false;
@@ -260,17 +260,19 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => {
-                                                                            setActionModal({
-                                                                                borrowing: borrowing,
-                                                                                action: Actions.UPDATE,
-                                                                                isOpen: true,
-                                                                            });
-                                                                        }}
-                                                                    >
-                                                                        {borrowing.status !== 'rejected' ? 'Update' : 'Resubmit'}
-                                                                    </DropdownMenuItem>
+                                                                    {borrowing.status == 'rejected' && (
+                                                                        <DropdownMenuItem
+                                                                            onClick={() => {
+                                                                                setActionModal({
+                                                                                    borrowing: borrowing,
+                                                                                    action: Actions.UPDATE,
+                                                                                    isOpen: true,
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            ReSubmit
+                                                                        </DropdownMenuItem>
+                                                                    )}
                                                                     <DropdownMenuItem
                                                                         onClick={() => {
                                                                             setActionModal({

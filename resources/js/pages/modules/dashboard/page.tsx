@@ -87,14 +87,14 @@ function QuickActions({ role }: { role: 'admin' | 'officer' | 'user' }) {
         admin: [
             { label: 'Manage Users', icon: Users, url: '/users' },
             { label: 'Manage Items', icon: Package, url: '/items' },
-            { label: 'View Reports', icon: FileText, url: '/borrowings/report' },
             { label: 'Manage Categories', icon: Tags, url: '/categories' },
+            { label: 'Activity Logs', icon: Activity, url: '/activity-logs' },
         ],
         officer: [
             { label: 'Process Returns', icon: BookOpen, url: '/return-items' },
             { label: 'View Borrowings', icon: ClipboardList, url: '/borrowings' },
             { label: 'Borrowing Report', icon: FileText, url: '/borrowings/report' },
-            { label: 'Activity Logs', icon: Activity, url: '/activity-logs' },
+            { label: 'Return Reports', icon: FileText, url: '/return-items/report' },
         ],
         user: [
             { label: 'Request Borrowing', icon: Plus, url: '/borrowings/create' },
