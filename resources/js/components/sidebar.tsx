@@ -126,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 url: '/activity-logs',
                 icon: Activity,
                 isActive: true,
-                isShow: authorizations(auth.role, ['admin', 'officer']),
+                isShow: authorizations(auth.role, ['admin']),
             },
         ],
     };
