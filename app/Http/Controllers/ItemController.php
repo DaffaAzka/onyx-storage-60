@@ -60,7 +60,7 @@ class ItemController extends Controller
             'category_id' => 'required|exists:categories,id',
             'quantity' => 'required|integer|min:0',
             'available_quantity' => 'required|integer|min:0',
-            'image_path' => 'required'
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $data = $request;

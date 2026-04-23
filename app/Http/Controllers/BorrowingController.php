@@ -84,7 +84,7 @@ class BorrowingController extends Controller
         $request->validate([
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
-            'planned_return_date' => 'required|date|after:today',
+            'planned_return_date' => 'required|date|after:borrow_date',
             'notes' => 'nullable|string',
             'borrow_date' => 'required|date',
         ]);
