@@ -157,7 +157,7 @@ export default function BorrowModal({ item, users, isOpen, onClose }: { item: It
                                 {setSelectedItems && (
                                     <SelectForm
                                         name="user_id"
-                                        text="Select User"
+                                        text="Select Borrower"
                                         handleChange={(value: string) => handleChange({ target: { name: 'user_id', value } } as any)}
                                         error={errors.user_id}
                                         value={values.user_id + ""}

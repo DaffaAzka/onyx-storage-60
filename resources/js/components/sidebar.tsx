@@ -40,7 +40,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         title: 'Create Borrowing',
                         url: '/borrowings/create',
                         isActive: true,
-                        isShow: authorizations(auth.role, ['user']),
+                        isShow: authorizations(auth.role, ['user', 'admin']),
                     },
                     {
                         title: 'Manage Borrowings',
