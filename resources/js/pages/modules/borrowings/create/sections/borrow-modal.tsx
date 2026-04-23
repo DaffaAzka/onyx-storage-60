@@ -2,13 +2,13 @@ import LoadingButton from '@/components/button_loading';
 import InputForm from '@/components/input-form';
 import TextareaForm from '@/components/textarea-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Item } from '@/lib/types';
+import { Item, User } from '@/lib/types';
 import { router, usePage } from '@inertiajs/react';
 import { Box } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isOpen: boolean; onClose: () => void }) {
+export default function BorrowModal({ item, users, isOpen, onClose }: { item: Item; isOpen: boolean; users: User[] | null; onClose: () => void }) {
     const { errors } = usePage().props;
     const [values, setValues] = useState({
         item_id: 0,
@@ -16,6 +16,7 @@ export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isO
         planned_return_date: '',
         quantity: 1,
         notes: '',
+        user_id: null,
     });
 
     const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isO
                 planned_return_date: '',
                 quantity: 1,
                 notes: '',
+                user_id: null,
             }));
         }
     }, [item.id]);
@@ -55,6 +57,7 @@ export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isO
                         planned_return_date: '',
                         quantity: 1,
                         notes: '',
+                        user_id: null,
                     });
                     toast.success('Item borrowed successfully');
                 },
@@ -143,6 +146,8 @@ export default function BorrowModal({ item, isOpen, onClose }: { item: Item; isO
                                         handleChange={handleChange}
                                     />
                                 </div>
+
+
 
                                 <TextareaForm
                                     name="notes"
