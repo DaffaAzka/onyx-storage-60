@@ -1,8 +1,9 @@
 import LoadingButton from '@/components/button_loading';
 import InputForm from '@/components/input-form';
+import SelectForm from '@/components/select-form';
 import TextareaForm from '@/components/textarea-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Item, User } from '@/lib/types';
+import { Item, SelectItems, User } from '@/lib/types';
 import { router, usePage } from '@inertiajs/react';
 import { Box } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -20,6 +21,12 @@ export default function BorrowModal({ item, users, isOpen, onClose }: { item: It
     });
 
     const [loading, setLoading] = useState(false);
+    const setSelectedItems: SelectItems[] | null = users
+        ? users.map((e) => ({
+              id: e.id,
+              name: e.name,
+          }))
+        : null;
 
     useEffect(() => {
         if (item) {
@@ -147,7 +154,16 @@ export default function BorrowModal({ item, users, isOpen, onClose }: { item: It
                                     />
                                 </div>
 
-
+                                {setSelectedItems && (
+                                    <SelectForm
+                                        name="user_id"
+                                        text="Select User"
+                                        handleChange={(value: string) => handleChange({ target: { name: 'user_id', value } } as any)}
+                                        error={errors.user_id}
+                                        value={values.user_id + ""}
+                                        items={setSelectedItems}
+                                    />
+                                )}
 
                                 <TextareaForm
                                     name="notes"

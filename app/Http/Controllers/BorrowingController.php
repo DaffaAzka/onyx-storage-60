@@ -70,8 +70,8 @@ class BorrowingController extends Controller
             $query = $query->where('category_id', $request->category_id);
         }
 
-        if ($auth->role == "admin" || $auth->role == "officer" ) {
-            $users = User::all();
+        if ($auth->role == "admin" || $auth->role == "officer") {
+            $users = User::where('role', 'user')->get();
         }
 
         $items = $query->orderBy('available_quantity', 'desc')->paginate(6);
@@ -90,14 +90,21 @@ class BorrowingController extends Controller
      */
     public function store(Request $request)
     {
+        $auth = Auth::user();
+
         $request->validate([
             'item_id' => 'required|exists:items,id',
             'quantity' => 'required|integer|min:1',
             'planned_return_date' => 'required|date|after:borrow_date',
             'notes' => 'nullable|string',
             'borrow_date' => 'required|date',
-            'user_id' => 'exists:users,id|optional'
         ]);
+
+        if ($auth->role !== "user") {
+            $request->validate([
+                'user_id' => 'exists:users,id|required'
+            ]);
+        }
 
         DB::transaction(function () use ($request) {
             $code = 'BR-' . $request->item_id . '-' . random_int(1000, 9999);
