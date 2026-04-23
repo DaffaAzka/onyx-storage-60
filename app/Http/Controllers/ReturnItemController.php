@@ -153,6 +153,8 @@ class ReturnItemController extends Controller
                 $q->where('name', 'like', "%$request->search%")
                     ->orWhere('code', 'like', "%$request->search%")
                     ->orWhere('description', 'like', "%$request->search%");
+            })->orWhereHas('borrowing.borrower', function ($q) use ($request) {
+                $q->where('name', 'like', "%$request->search%")->orWhere('email', 'like', "%$request->search%");
             });
         }
 

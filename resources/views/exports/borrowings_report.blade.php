@@ -130,7 +130,7 @@
                     <td>
                         <div style="font-weight: 500; color: #0f172a;">{{ $borrowing->approver->name ?? '-' }}</div>
                         @if($borrowing->approver)
-                            <div class="text-muted">Role: {{ ucfirst($borrowing->approver->role ?? 'N/A') }}</div>
+                            <div class="text-muted">{{ ucfirst($borrowing->approver->role ?? 'N/A') }}</div>
                         @endif
                     </td>
                     <td class="text-center">{{ $borrowing->quantity }}</td>

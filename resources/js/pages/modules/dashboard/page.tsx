@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatCurrency } from '@/lib/helpers';
 import { DashboardData } from '@/lib/types';
 import { Link } from '@inertiajs/react';
 import {
@@ -324,7 +325,7 @@ function OfficerDashboard({ data }: { data: NonNullable<DashboardData['officer']
                             <CardContent className="flex items-center justify-between p-6">
                                 <div>
                                     <p className="text-sm font-medium text-gray-700">Fines to Collect</p>
-                                    <p className="mt-2 text-3xl font-bold text-red-600">{(data.fines_pending_collection || 0).toLocaleString()}</p>
+                                    <p className="mt-2 text-3xl font-bold text-red-600">{formatCurrency(data.fines_pending_collection ?? 0)}</p>
                                 </div>
                                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-600 text-white">
                                     <DollarSign className="h-6 w-6" />
@@ -391,7 +392,7 @@ function UserDashboard({ data }: { data: NonNullable<DashboardData['user']> }) {
                         <AlertCircle className="h-6 w-6 text-red-600" />
                         <AlertTitle className="text-red-800">Unpaid Fines Alert</AlertTitle>
                         <AlertDescription className="text-red-700">
-                            You have <strong>₱{data.total_fines.toFixed(2)}</strong> in unpaid fines ({data.unpaid_fines_count} fine
+                            You have <strong>{formatCurrency(data.total_fines ?? 0)} </strong> in unpaid fines ({data.unpaid_fines_count} fine
                             {data.unpaid_fines_count !== 1 ? 's' : ''} pending)
                         </AlertDescription>
                     </Alert>

@@ -130,7 +130,7 @@
                     <td>
                         <div style="font-weight: 500; color: #0f172a;">{{ $return_item->received->name ?? '-' }}</div>
                         @if($return_item->received)
-                            <div class="text-muted">Role: {{ ucfirst($return_item->received->role ?? 'N/A') }}</div>
+                            <div class="text-muted">{{ ucfirst($return_item->received->role ?? 'N/A') }}</div>
                         @endif
                     </td>
                     <td>
