@@ -18,6 +18,8 @@ class BorrowingController extends Controller
      */
     public function index(Request $request)
     {
+        $this->syncLate();
+
         $query = Borrowing::with(['item', 'item.category', 'borrower', 'approver', 'uploader'])
             ->filteringByRole()
             ->latest();
@@ -101,6 +103,7 @@ class BorrowingController extends Controller
             ]);
 
             Item::findOrFail($request->item_id)->decrement('available_quantity', $request->quantity);
+            ActivityLogController::makeLog("CREATE", "Creating new Borrowing " . $code);
         });
 
         return back();
@@ -153,16 +156,22 @@ class BorrowingController extends Controller
                         'notes' => $request->notes,
                         'status' => 'pending'
                     ]);
+
+                    ActivityLogController::makeLog("UPDATE", "ReSubmit Borrowing " . $borrowing->code);
                 });
             }
         } else {
-            Borrowing::findOrFail($id)->update([
-                'item_id' => $request->item_id,
-                'quantity' => $request->quantity,
-                'borrow_date' => $request->borrow_date,
-                'planned_return_date' => $request->planned_return_date,
-                'notes' => $request->notes,
-            ]);
+            DB::transaction(function () use ($borrowing, $request, $id) {
+                Borrowing::findOrFail($id)->update([
+                    'item_id' => $request->item_id,
+                    'quantity' => $request->quantity,
+                    'borrow_date' => $request->borrow_date,
+                    'planned_return_date' => $request->planned_return_date,
+                    'notes' => $request->notes,
+                ]);
+
+                ActivityLogController::makeLog("UPDATE", "Updating Borrowing " . $borrowing->code);
+            });
         }
 
         return back();
@@ -173,7 +182,13 @@ class BorrowingController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $borrowing = Borrowing::findOrFail($id);
+        if ($borrowing->status == "rejected") {
+            DB::transaction(function () use ($borrowing) {
+                ActivityLogController::makeLog("DELETE", "Deleted Borrowing " . $borrowing->code);
+                $borrowing->delete();
+            });
+        }
     }
 
     public function syncLate()
@@ -205,23 +220,29 @@ class BorrowingController extends Controller
             $image_path = $path;
             $request['upload_by'] = Auth::id();
             $request['upload_at'] = now();
+        } else {
+            $image_path = null;
         }
 
-        $borrowing->update([
-            'status' => $request['status'],
-            'rejection_reason' => $request['rejection_reason'] ?? null,
-            'image_path' => $image_path ?? null,
-            'approved_by' => $request['status'] === 'approved' ? auth()->id() : $borrowing->approved_by,
-            'approved_at' => now(),
-            'upload_by' => $request->upload_by ?? null,
-            'upload_at' => $request->upload_at ?? null,
-        ]);
-
-        if ($request['status'] === 'rejected') {
-            $borrowing->item()->update([
-                'available_quantity' => $borrowing->item->available_quantity + $borrowing->quantity
+        DB::transaction(function () use ($request, $borrowing, $image_path) {
+            $borrowing->update([
+                'status' => $request['status'],
+                'rejection_reason' => $request['rejection_reason'] ?? null,
+                'image_path' => $image_path ?? null,
+                'approved_by' => $request['status'] === 'approved' ? auth()->id() : $borrowing->approved_by,
+                'approved_at' => now(),
+                'upload_by' => $request->upload_by ?? null,
+                'upload_at' => $request->upload_at ?? null,
             ]);
-        }
+
+            if ($request['status'] === 'rejected') {
+                $borrowing->item()->update([
+                    'available_quantity' => $borrowing->item->available_quantity + $borrowing->quantity
+                ]);
+            }
+
+            ActivityLogController::makeLog("UPDATE", "Updating status borrowing " . $borrowing->code);
+        });
 
         return back();
     }
@@ -275,7 +296,8 @@ class BorrowingController extends Controller
             'borrowings' => $query->get()
         ]);
 
-        $pdf->setPaper('A4');
+        $pdf->setPaper('A4', 'landscape');
         return $pdf->download();
     }
+
 }

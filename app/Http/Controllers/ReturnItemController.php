@@ -20,7 +20,7 @@ class ReturnItemController extends Controller
     {
         $query = Borrowing::with(['approver', 'borrower', 'item.category', 'returnItem'])
             ->where(function ($q) {
-                $q->whereIn('status', ['borrowed', 'late'])
+                $q->whereIn('status', ['borrowed', 'late', 'returned'])
                     ->where(function ($q) {
                         $q->doesntHave('returnItem')
                             ->orWhereHas('returnItem', function ($q) {
@@ -32,7 +32,7 @@ class ReturnItemController extends Controller
             ->latest();
 
         if ($request->search && $request->search) {
-            $query = $query->whereHas('item', function ($q) use($request) {
+            $query = $query->whereHas('item', function ($q) use ($request) {
                 $q->where('name', 'like', "%$request->search%")
                     ->orWhere('code', 'like', "%$request->search%")
                     ->orWhere('description', 'like', "%$request->search%");
@@ -134,6 +134,8 @@ class ReturnItemController extends Controller
                 $item->available_quantity += $borrowing->quantity;
                 $item->save();
             }
+
+            ActivityLogController::makeLog("CREATE", "Returning Borrowing " . $borrowing->code);
         });
 
         return back();
@@ -142,9 +144,20 @@ class ReturnItemController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show()
+    public function show(Request $request)
     {
-        $return_items = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.borrower', 'received', 'uploader'])->filteringByRole()->paginate(10);
+        $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.borrower', 'received', 'uploader'])->whereNotNull('verified_at')->filteringByRole();
+
+        if ($request->search && $request->search) {
+            $query->whereHas('borrowing.item', function ($q) use ($request) {
+                $q->where('name', 'like', "%$request->search%")
+                    ->orWhere('code', 'like', "%$request->search%")
+                    ->orWhere('description', 'like', "%$request->search%");
+            });
+        }
+
+        $return_items = $query->paginate(10);
+
         return Inertia::render("modules/return-items/list/page", [
             "return_items" => $return_items
         ]);
@@ -170,12 +183,17 @@ class ReturnItemController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $return = ReturnItem::findOrFail($request->return_item_id);
-        $return->update([
-            'fine_amount' => $request->fine_amount,
-            'fine_paid' => $request->fine_paid,
-            'notes' => $request->notes,
-        ]);
+        DB::transaction(function () use ($request) {
+            $return = ReturnItem::findOrFail($request->return_item_id);
+            $return->update([
+                'fine_amount' => $request->fine_amount,
+                'fine_paid' => $request->fine_paid,
+                'notes' => $request->notes,
+            ]);
+            ActivityLogController::makeLog("UPDATE", "Updating Return Item ");
+        });
+
+
 
         return back();
     }
@@ -214,12 +232,12 @@ class ReturnItemController extends Controller
             $query = $query->when($request->start_date, function ($q) use ($request) {
                 $q->where('return_date', '>=', $request->start_date);
             })
-            ->when($request->end_date, function ($q) use ($request) {
-                $q->where('return_date', '<=', $request->end_date);
-            });
+                ->when($request->end_date, function ($q) use ($request) {
+                    $q->where('return_date', '<=', $request->end_date);
+                });
         }
 
-        $return_items =  $query->paginate(10);
+        $return_items = $query->paginate(10);
 
         return Inertia::render('modules/return-items/report/page', [
             'return_items' => $return_items,
@@ -227,8 +245,10 @@ class ReturnItemController extends Controller
         ]);
     }
 
-    public function exportPdf(Request $request) {
-        $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.item.category', 'borrowing.borrower', 'received']);
+    public function exportPdf(Request $request)
+    {
+        $query = ReturnItem::with(['borrowing', 'borrowing.item', 'borrowing.item.category', 'borrowing.borrower', 'received'])->
+            filteringByRole();
 
         if ($request->has(['start_date', 'end_date'])) {
             $query = $query->when($request->start_date, function ($q) use ($request) {
@@ -247,7 +267,7 @@ class ReturnItemController extends Controller
             'return_items' => $query->get()
         ]);
 
-        $pdf->setPaper('A4');
+        $pdf->setPaper('A4', 'landscape');
         return $pdf->download();
 
     }

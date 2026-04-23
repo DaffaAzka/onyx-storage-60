@@ -42,4 +42,8 @@ class Item extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    function borrowings() {
+        return $this->hasMany(Borrowing::class);
+    }
 }

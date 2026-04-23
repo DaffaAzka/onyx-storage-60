@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -53,13 +54,16 @@ class UserController extends Controller
             'retry_password' => 'required|string|same:password',
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-            'phone_number' => $request->phone_number ?? '',
-            'password' => Hash::make($request->password),
-        ]);
+        DB::transaction(function () use ($request) {
+            User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'role' => $request->role,
+                'phone_number' => $request->phone_number ?? '',
+                'password' => Hash::make($request->password),
+            ]);
+            ActivityLogController::makeLog("CREATE", "Creating new User");
+        });
 
         return back();
 
@@ -111,7 +115,10 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
-        User::findOrFail($id)->update($data);
+        DB::transaction(function () use ($data, $id) {
+            User::findOrFail($id)->update($data);
+            ActivityLogController::makeLog("UPDATE", "Updating User $id");
+        });
 
         return back();
     }

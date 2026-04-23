@@ -6,12 +6,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { printItemSoftDelete } from '@/lib/component-helpers';
 import { formatCurrency } from '@/lib/helpers';
 import { Actions, ReturnItem } from '@/lib/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { HistoryIcon, MoreHorizontalIcon } from 'lucide-react';
 import { useState } from 'react';
 import ActionModal from './action-modal';
 
+export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
+    auth: {
+        role: string;
+    };
+};
+
 export default function DataTable({ return_items }: { return_items: ReturnItem[] }) {
+    const { auth } = usePage<PageProps>().props;
+
     const [detailModal, setDetailModal] = useState<{
         returnItem: ReturnItem | null;
         action: Actions | null;
@@ -84,17 +92,19 @@ export default function DataTable({ return_items }: { return_items: ReturnItem[]
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem
-                                                            onClick={() =>
-                                                                setDetailModal({
-                                                                    returnItem: data,
-                                                                    isOpen: true,
-                                                                    action: Actions.UPDATE,
-                                                                })
-                                                            }
-                                                        >
-                                                            Update
-                                                        </DropdownMenuItem>
+                                                        {auth.role !== 'user' && (
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    setDetailModal({
+                                                                        returnItem: data,
+                                                                        isOpen: true,
+                                                                        action: Actions.UPDATE,
+                                                                    })
+                                                                }
+                                                            >
+                                                                Update
+                                                            </DropdownMenuItem>
+                                                        )}
                                                         <DropdownMenuItem
                                                             onClick={() =>
                                                                 setDetailModal({

@@ -21,8 +21,6 @@ export default function DataCards({ borrowings, role }: { borrowings: Borrowing[
         action: 'return',
     });
 
-    console.log(role);
-
     const [detailModal, setDetailModal] = useState<{
         borrowing: Borrowing | null;
         isOpen: boolean;

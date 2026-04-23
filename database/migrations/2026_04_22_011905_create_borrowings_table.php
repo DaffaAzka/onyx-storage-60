@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->integer('quantity');
             $table->string('image_path')->nullable();
 
-            $table->enum('status', ['pending', 'approved', 'rejected', 'borrowed', 'returned', 'canceled'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'borrowed', 'returned', 'canceled', 'late'])->default('pending');
 
             $table->date('borrow_date')->nullable();
             $table->date('planned_return_date')->nullable();

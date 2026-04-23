@@ -143,6 +143,8 @@ class ItemController extends Controller
             'available_quantity' => $data['available_quantity'],
             'image_path' => $data['path'],
         ]);
+
+        return back();
     }
 
     /**
@@ -150,13 +152,19 @@ class ItemController extends Controller
      */
     public function destroy(string $id)
     {
-        $item = Item::findOrFail($id);
+        $item = Item::with('borrowings')->findOrFail($id);
 
-        if ($item->image_path) {
-            $this->removeImg($item->image_path);
+        if ($item->borrowings()->whereIn('status', ['borrowed', 'pending', 'approved'])->exists()) {
+            return back()->withErrors(['message' => 'Cannot delete item because the item still had transaction.']);
+        } else {
+            if ($item->image_path) {
+                $this->removeImg($item->image_path);
+            }
+
+            $item->delete();
         }
 
-        $item->delete();
+        return back();
     }
 
     public function removeImg(string $path)

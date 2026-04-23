@@ -142,7 +142,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                         <TableCell>
                                             <img
                                                 className="h-10 w-10 object-cover"
-                                                src={borrowing.image_url ?? borrowing.item?.image_url ?? ''}
+                                                src={(borrowing.image_path ? borrowing.image_url : borrowing.item?.image_url) ?? ''}
                                                 alt={borrowing.item?.name}
                                             />
                                         </TableCell>
@@ -260,7 +260,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    {/* <DropdownMenuItem
+                                                                    <DropdownMenuItem
                                                                         onClick={() => {
                                                                             setActionModal({
                                                                                 borrowing: borrowing,
@@ -270,7 +270,7 @@ export default function DataTable({ borrowings, userRole }: { borrowings: Borrow
                                                                         }}
                                                                     >
                                                                         {borrowing.status !== 'rejected' ? 'Update' : 'Resubmit'}
-                                                                    </DropdownMenuItem> */}
+                                                                    </DropdownMenuItem>
                                                                     <DropdownMenuItem
                                                                         onClick={() => {
                                                                             setActionModal({
