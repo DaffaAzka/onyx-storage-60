@@ -2,12 +2,12 @@ import AuthLayout from '@/components/layouts/auth-layout';
 import PaginationComponent from '@/components/pagination';
 import SelectForm from '@/components/select-form';
 import { Input } from '@/components/ui/input';
-import { Category, Item, PaginatedData } from '@/lib/types';
+import { Category, Item, PaginatedData, User } from '@/lib/types';
 import { router } from '@inertiajs/react';
 import React, { useState } from 'react';
 import DataCards from './sections/data-cards';
 
-export default function CreatePage({ items, categories }: { items: PaginatedData<Item>; categories: Category[] }) {
+export default function CreatePage({ items, categories, users }: { items: PaginatedData<Item>; categories: Category[]; users: User[] | null }) {
     const [categoryId, setCategoryId] = useState('');
     const [search, setSearch] = useState('');
 
@@ -43,7 +43,7 @@ export default function CreatePage({ items, categories }: { items: PaginatedData
             </div>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
                 <div className="flex flex-col gap-4 lg:col-span-4">
-                    <DataCards items={items.data} />
+                    <DataCards items={items.data} users={users} />
                 </div>
 
                 {/* <div className="lg:col-span-1">

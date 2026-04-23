@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Borrowing;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\User;
 use Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
@@ -53,6 +54,9 @@ class BorrowingController extends Controller
      */
     public function create(Request $request)
     {
+        $auth = Auth::user();
+        $users = null;
+
         $categories = Category::all();
         $query = Item::with(['category', 'user']);
 
@@ -66,6 +70,10 @@ class BorrowingController extends Controller
             $query = $query->where('category_id', $request->category_id);
         }
 
+        if ($auth->role == "admin" || $auth->role == "officer" ) {
+            $users = User::all();
+        }
+
         $items = $query->orderBy('available_quantity', 'desc')->paginate(6);
         $borrowings = Borrowing::with(['item', 'item.category', 'borrower', 'approver'])->filteringByRole()->get();
 
@@ -73,6 +81,7 @@ class BorrowingController extends Controller
             'items' => $items,
             'categories' => $categories,
             'borrowings' => $borrowings,
+            'users' => $users
         ]);
     }
 
@@ -87,13 +96,14 @@ class BorrowingController extends Controller
             'planned_return_date' => 'required|date|after:borrow_date',
             'notes' => 'nullable|string',
             'borrow_date' => 'required|date',
+            'user_id' => 'exists:users,id|optional'
         ]);
 
         DB::transaction(function () use ($request) {
             $code = 'BR-' . $request->item_id . '-' . random_int(1000, 9999);
 
             Borrowing::create([
-                'borrower_id' => auth()->id(),
+                'borrower_id' => $request->user_id ?? auth()->id(),
                 'item_id' => $request->item_id,
                 'quantity' => $request->quantity,
                 'borrow_date' => $request->borrow_date,

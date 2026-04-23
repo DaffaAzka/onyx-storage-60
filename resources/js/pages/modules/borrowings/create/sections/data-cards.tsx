@@ -1,4 +1,4 @@
-import { Item } from '@/lib/types';
+import { Item, User } from '@/lib/types';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { useState } from 'react';
 import BorrowModal from './borrow-modal';
 import { HistoryIcon } from 'lucide-react';
 
-export default function DataCards({ items }: { items: Item[] }) {
+export default function DataCards({ items, users }: { items: Item[], users: User[] | null }) {
     const [borrowModal, setBorrowModal] = useState<{
         item: Item | null;
         isOpen: boolean;
@@ -81,7 +81,7 @@ export default function DataCards({ items }: { items: Item[] }) {
             )}
 
             {borrowModal.item && (
-                <BorrowModal item={borrowModal.item} isOpen={borrowModal.isOpen} onClose={() => handleClick(borrowModal.item!, false)} />
+                <BorrowModal users={users} item={borrowModal.item} isOpen={borrowModal.isOpen} onClose={() => handleClick(borrowModal.item!, false)} />
             )}
         </>
     );
